@@ -1,6 +1,8 @@
 'use client';
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import TaskForm from "./components/TaskForm";
 import styles from "./page.module.css";
+// import { get } from "lodash";
 
 // requirements
 // Add new task - create a form input that allows the user to add a new task
@@ -10,41 +12,60 @@ import styles from "./page.module.css";
 // Remove tasks using a delete button
 // Task list should persist between page reloads (use browser localStorage)
 
-interface ISession {
+//  TypeScript interface for what is handling super basic data management. 
+
+// Interface for a task
+export interface ITask {
+  task: string,
+  completed: boolean,
+  due?: Date,
+}
+
+// Session probably is not the correct term but is closest to what I'm going for
+export interface ISession {
   name: string,
-  tasks: []
+  tasks: ITask[]
 }
 
 export default function Home() {
 
-  const [session, setSession] = useState<ISession>({
+  // Default session
+  const defaultSession: ISession = {
     name: "saved_tasks",
     tasks: []
-  })
+  }
 
-  useLayoutEffect(()=> {
-    if (!localStorage.getItem("session")) {
-      localStorage.setItem("session", JSON.stringify(session))
-    }
-    else {
-      const localSessionString = localStorage.getItem("session")
-      if (typeof localSessionString === 'string') {
-        let localSessionObject = JSON.parse(localSessionString)
-        setSession(localSessionObject)
-      }
+  // Creating a basic session state
+  const [session, setSession] = useState<ISession>(defaultSession)
+
+  useEffect(()=> {
+    const localSession = localStorage.getItem("session")
+    if(localSession && typeof localSession === "string") {
+      const parsedSession = JSON.parse(localSession)
+      setSession(parsedSession)
     }
   }, [])
 
-  useEffect(()=> {
+  // Function for updating the session
+  const updateSession = (updatedSession: ISession) => {
+    localStorage.setItem("session", JSON.stringify(updatedSession))
+    setSession(updatedSession)
     console.log(session)
-  }, [session])
+  }
+
+  // Function for adding a new task
+  const addTask = (newTask: ITask) => {
+    const updatedSession = {name: session.name, tasks: [...session.tasks, newTask]}
+    updateSession(updatedSession) 
+  }
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <div>
-          Add Something to tasks for proof of concept
-          <button onClick={()=> {}}>Click me</button>
+          {/* Add Something to tasks for proof of {session.name}
+          <button onClick={()=> {updateSession({name: "test name", tasks: session.tasks})}}>Click me</button> */}
+          <TaskForm onSubmit={addTask}/>
         </div>
       </main>
     </div>

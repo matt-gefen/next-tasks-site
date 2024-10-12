@@ -24,7 +24,8 @@
 .task {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  gap: 30px;
+  /* justify-content: space-between; */
 }
 .task_left {
   display: flex;
@@ -41,4 +42,11 @@
 
 .checked_task {
   color: grey;
+}
+
+.delete_task {
+  height: fit-content;
+  background-color: crimson;
+  border: 0;
+  padding: 10px;
 }

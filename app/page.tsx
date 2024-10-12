@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import TaskForm from "./components/TaskForm";
 import styles from "./page.module.css";
-import { map, sortBy } from "lodash";
+import { filter, map, sortBy } from "lodash";
 
 // requirements
 // Add new task - create a form input that allows the user to add a new task
@@ -30,14 +30,10 @@ export interface ISession {
 
 export default function Home() {
 
-  // Default session
-  const defaultSession: ISession = {
+  const [session, setSession] = useState<ISession>({
     name: "saved_tasks",
     tasks: []
-  }
-
-  // Creating a basic session state
-  const [session, setSession] = useState<ISession>(defaultSession)
+  })
   const [addingTask, setAddingTask] = useState(false)
 
   useEffect(()=> {
@@ -48,17 +44,23 @@ export default function Home() {
     }
   }, [])
 
-  // Function for updating the session
   const updateSession = (updatedSession: ISession) => {
     localStorage.setItem("session", JSON.stringify(updatedSession))
     setSession(updatedSession)
   }
 
-  // Function for adding a new task
   const addTask = (newTask: ITask) => {
     const updatedSession = {name: session.name, tasks: [...session.tasks, newTask]}
     updateSession(updatedSession) 
     setAddingTask(false)
+  }
+
+  const deleteTask = (taskId: string) => {
+    const filteredTasks = filter(session.tasks, (sessionTask) => {
+      return sessionTask.id !== taskId
+    })
+    const updatedSession = {name: session.name, tasks: filteredTasks}
+    updateSession(updatedSession)   
   }
 
   const updateTask = (task: ITask) => {
@@ -81,7 +83,16 @@ export default function Home() {
           {
             map(sortBy(session.tasks, ["due"]), (task) => {
               return (
-                <div className={`${styles.task} ${task.completed ? styles.checked_task: ""}`} id={`${task.id}`}>
+                <div 
+                  className={`${styles.task} ${task.completed ? styles.checked_task: ""}`} 
+                  id={`${task.id}`}
+                >
+                  <button
+                    className={styles.delete_task}
+                    onClick={()=>{deleteTask(task.id)}}
+                  >
+                    x
+                  </button>
                   <div className={styles.task_left}>
                     <div>
                       {task.task}
@@ -115,7 +126,9 @@ export default function Home() {
         }
         {
           !addingTask && (
-            <button onClick={()=>{setAddingTask(true)}}>Add New Task</button>
+            <button onClick={()=>{setAddingTask(true)}}>
+              Add New Task
+            </button>
           )
         }
       </main>

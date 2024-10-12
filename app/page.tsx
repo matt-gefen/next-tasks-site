@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import TaskForm from "./components/TaskForm";
 import styles from "./page.module.css";
+import { get, map, sortBy } from "lodash";
 // import { get } from "lodash";
 
 // requirements
@@ -18,7 +19,7 @@ import styles from "./page.module.css";
 export interface ITask {
   task: string,
   completed: boolean,
-  due?: Date,
+  due: Date,
 }
 
 // Session probably is not the correct term but is closest to what I'm going for
@@ -62,9 +63,24 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <div className={styles.tasks}>
+          <h1>Tasks</h1>
+          {
+            map(sortBy(session.tasks, ["due"]), (task) => {
+              return (
+                <div className={styles.task}>
+                  <div>
+                    {task.task}
+                  </div>
+                  <div>
+                    {task.due.toLocaleDateString()}
+                  </div>
+                </div>
+              )
+            })
+          }
+        </div>
         <div>
-          {/* Add Something to tasks for proof of {session.name}
-          <button onClick={()=> {updateSession({name: "test name", tasks: session.tasks})}}>Click me</button> */}
           <TaskForm onSubmit={addTask}/>
         </div>
       </main>

@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import TaskForm from "./components/TaskForm";
 import styles from "./page.module.css";
-import { get, map, sortBy } from "lodash";
-// import { get } from "lodash";
+import { map, sortBy } from "lodash";
 
 // requirements
 // Add new task - create a form input that allows the user to add a new task
@@ -17,6 +16,7 @@ import { get, map, sortBy } from "lodash";
 
 // Interface for a task
 export interface ITask {
+  id: string,
   task: string,
   completed: boolean,
   due: Date,
@@ -38,6 +38,7 @@ export default function Home() {
 
   // Creating a basic session state
   const [session, setSession] = useState<ISession>(defaultSession)
+  const [addingTask, setAddingTask] = useState(false)
 
   useEffect(()=> {
     const localSession = localStorage.getItem("session")
@@ -51,13 +52,25 @@ export default function Home() {
   const updateSession = (updatedSession: ISession) => {
     localStorage.setItem("session", JSON.stringify(updatedSession))
     setSession(updatedSession)
-    console.log(session)
   }
 
   // Function for adding a new task
   const addTask = (newTask: ITask) => {
     const updatedSession = {name: session.name, tasks: [...session.tasks, newTask]}
     updateSession(updatedSession) 
+    setAddingTask(false)
+  }
+
+  const updateTask = (task: ITask) => {
+    const updatedTasks = map(session.tasks, (sessionTask) => {
+      if (sessionTask.id === task.id) {
+        return task
+      } else {
+        return sessionTask
+      }
+    })
+    const updatedSession = {name: session.name, tasks: updatedTasks}
+    updateSession(updatedSession)   
   }
 
   return (
@@ -68,21 +81,43 @@ export default function Home() {
           {
             map(sortBy(session.tasks, ["due"]), (task) => {
               return (
-                <div className={styles.task}>
-                  <div>
-                    {task.task}
+                <div className={`${styles.task} ${task.completed ? styles.checked_task: ""}`} id={`${task.id}`}>
+                  <div className={styles.task_left}>
+                    <div>
+                      {task.task}
+                    </div>
+                    <div>
+                      {task.due.toString().substring(0, 10)}
+                    </div>
                   </div>
-                  <div>
-                    {task.due.toLocaleDateString()}
+                  <div className={styles.task_right}>
+                    <label htmlFor="">Complete</label>
+                    <input
+                      type="checkbox"
+                      name="complete"
+                      checked={task.completed}
+                      onChange={(e)=>{
+                        updateTask(
+                          {...task, completed: Boolean(e.target.checked)}
+                        )
+                      }}
+                    />
                   </div>
                 </div>
               )
             })
           }
         </div>
-        <div>
-          <TaskForm onSubmit={addTask}/>
-        </div>
+        {
+          addingTask && (
+            <TaskForm onSubmit={addTask}/>
+          )
+        }
+        {
+          !addingTask && (
+            <button onClick={()=>{setAddingTask(true)}}>Add New Task</button>
+          )
+        }
       </main>
     </div>
   );

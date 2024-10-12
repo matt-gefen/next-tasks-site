@@ -14,6 +14,7 @@ export default function TaskForm({onSubmit}:Props) {
     event.preventDefault()
     const dueDate = new Date(due)
     const newTask: ITask = {
+      id: (Math.random() + 1).toString(36).substring(7),
       task: task,
       completed: false,
       due: dueDate
@@ -24,7 +25,7 @@ export default function TaskForm({onSubmit}:Props) {
   }
 
   return (
-    <div>
+    <div className={styles.task_form_component}>
       <form className={styles.task_form} onSubmit={handleSubmit}>
         <div className={styles.task_form_item}>
           <label>Task</label>
@@ -41,6 +42,7 @@ export default function TaskForm({onSubmit}:Props) {
         <div className={styles.task_form_item}>
           <label>Due Date</label>
           <input
+            className={styles.task_form_date}
             type="date"
             id="due"
             name="due"
@@ -49,7 +51,9 @@ export default function TaskForm({onSubmit}:Props) {
             onChange={(e) => {setDue(new Date(e.target.value))}}
           />
         </div>
-        <button type="submit">Add Task</button>
+        <button className={styles.task_form_button} type="submit">
+          Add Task
+        </button>
       </form>
     </div>
   )
